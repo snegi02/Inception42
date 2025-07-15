@@ -1,0 +1,65 @@
+services:
+  nginx:
+    build: ./requirements/nginx
+    container_name: nginx
+    ports:
+      - "443:443"
+    volumes:
+      - wp_site_data:/var/www/html:ro
+      - ./requirements/nginx/conf:/etc/nginx/conf.d
+      - ./requirements/nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - wordpress
+    networks:
+      - inception
+    restart: always
+    
+  mariadb:
+    build: ./requirements/mariadb
+    container_name: mariadb
+    volumes:
+      - wp_db_data:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    networks:
+      - inception
+    restart: always
+    
+  wordpress:
+    build: ./requirements/wordpress
+    container_name: wordpress
+    volumes:
+      - wp_site_data:/var/www/html
+    environment:
+      - WORDPRESS_DB_HOST=mariadb:3306
+      - WORDPRESS_DB_NAME=${MYSQL_DATABASE}
+      - WORDPRESS_DB_USER=${MYSQL_USER}
+      - WORDPRESS_DB_PASSWORD=${MYSQL_PASSWORD}
+    depends_on:
+      - mariadb
+    networks:
+      - inception
+    restart: always
+  
+volumes:
+  wp_site_data:
+    name: wp_site_data
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/snegi/data/wordpress
+      o: bind
+  wp_db_data:
+    name: wp_db_data
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/snegi/data/mysql
+      o: bind
+    
+networks:
+  inception:
+    driver: bridge
