@@ -1,8 +1,8 @@
 #!/bin/sh
 
 # Paths to SSL files
-CERT_PATH=/etc/nginx/ssl/snegi.42.fr.crt
-KEY_PATH=/etc/nginx/ssl/snegi.42.fr.key
+CERT_PATH=/etc/nginx/ssl/${DOMAIN_NAME}.crt
+KEY_PATH=/etc/nginx/ssl/${DOMAIN_NAME}.key
 
 # Check if cert files exist; if not, generate self-signed cert
 if [ ! -f "$CERT_PATH" ] || [ ! -f "$KEY_PATH" ]; then
@@ -12,7 +12,9 @@ if [ ! -f "$CERT_PATH" ] || [ ! -f "$KEY_PATH" ]; then
       -newkey rsa:2048 \
       -keyout "$KEY_PATH" \
       -out "$CERT_PATH" \
-      -subj "/CN=snegi.42.fr/O=Self-Signed/C=FR"
+      -subj "/CN=${DOMAIN_NAME}/O=Self-Signed/C=FR"
 fi
+
+envsubst '${DOMAIN_NAME}' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf
 
 exec "$@"

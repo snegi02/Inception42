@@ -36,4 +36,3 @@ logs:
 ps:
 	@echo "Docker containers status"
 	@$(DC) -f $(DC_FILE) ps
-
